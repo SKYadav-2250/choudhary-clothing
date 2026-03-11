@@ -52,7 +52,10 @@ const Navbar = () => {
                         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <Search className="w-5 h-5" />
                         </button>
-                        <Link to="/account" className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block">
+                        <Link
+                            to={localStorage.getItem('user') ? "/account" : "/login"}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
+                        >
                             <User className="w-5 h-5" />
                         </Link>
                         <Link to="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">

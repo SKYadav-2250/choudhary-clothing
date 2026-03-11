@@ -17,6 +17,9 @@ export const products = [
             'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
         tag: 'NEW ARRIVAL',
+        category: 'Oversized T-Shirts',
+        sizes: ['M', 'L', 'XL'],
+        colors: ['Black', 'White']
     },
     {
         id: 2,
@@ -28,6 +31,9 @@ export const products = [
             'https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
         tag: 'MIGHT SELL OUT',
+        category: 'Joggers',
+        sizes: ['S', 'M', 'L'],
+        colors: ['Black']
     },
     {
         id: 3,
@@ -39,6 +45,9 @@ export const products = [
             'https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
         tag: 'NEW ARRIVAL',
+        category: 'Oversized T-Shirts',
+        sizes: ['S', 'M', 'L', 'XL'],
+        colors: ['Gray', 'White']
     },
     {
         id: 4,
@@ -50,6 +59,9 @@ export const products = [
             'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
         ],
         tag: 'BEST SELLER',
+        category: 'Classic Tees',
+        sizes: ['M', 'L'],
+        colors: ['White', 'Orange']
     }
 ];
 

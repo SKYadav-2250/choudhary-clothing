@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -7,6 +9,49 @@ interface FilterDrawerProps {
 }
 
 const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Local state for filters
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+    const [selectedColors, setSelectedColors] = useState<string[]>([]);
+    const [selectedPrice, setSelectedPrice] = useState<string>('');
+
+    // Initialize local state from URL when drawer opens
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedCategories(searchParams.getAll('category'));
+            setSelectedSizes(searchParams.getAll('size'));
+            setSelectedColors(searchParams.getAll('color'));
+            setSelectedPrice(searchParams.get('price') || '');
+        }
+    }, [isOpen, searchParams]);
+
+    const handleApply = () => {
+        const params = new URLSearchParams();
+        selectedCategories.forEach(c => params.append('category', c));
+        selectedSizes.forEach(s => params.append('size', s));
+        selectedColors.forEach(c => params.append('color', c));
+        if (selectedPrice) {
+            params.set('price', selectedPrice);
+        }
+        setSearchParams(params);
+        onClose();
+    };
+
+    const handleClear = () => {
+        setSearchParams(new URLSearchParams());
+        onClose();
+    };
+
+    const toggleArrayItem = (item: string, array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>) => {
+        if (array.includes(item)) {
+            setArray(array.filter(i => i !== item));
+        } else {
+            setArray([...array, item]);
+        }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -45,7 +90,12 @@ const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
                                 <div className="space-y-3">
                                     {['Oversized T-Shirts', 'Hoodies', 'Jackets', 'Joggers', 'Classic Tees'].map((cat) => (
                                         <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-                                            <input type="checkbox" className="w-4 h-4 accent-primary rounded-sm cursor-pointer" />
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedCategories.includes(cat)}
+                                                onChange={() => toggleArrayItem(cat, selectedCategories, setSelectedCategories)}
+                                                className="w-4 h-4 accent-primary rounded-sm cursor-pointer"
+                                            />
                                             <span className="text-sm text-gray-700 group-hover:text-primary transition-colors">{cat}</span>
                                         </label>
                                     ))}
@@ -59,7 +109,9 @@ const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
                                     {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size) => (
                                         <button
                                             key={size}
-                                            className="w-12 h-12 rounded-sm border border-gray-300 flex items-center justify-center text-sm font-medium hover:border-black hover:bg-black hover:text-white transition-all cursor-pointer"
+                                            onClick={() => toggleArrayItem(size, selectedSizes, setSelectedSizes)}
+                                            className={`w-12 h-12 rounded-sm border flex items-center justify-center text-sm font-medium transition-all cursor-pointer
+                                                ${selectedSizes.includes(size) ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black hover:bg-black hover:text-white'}`}
                                         >
                                             {size}
                                         </button>
@@ -82,7 +134,9 @@ const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
                                         <button
                                             key={color.name}
                                             title={color.name}
-                                            className="w-8 h-8 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all hover:scale-110 shadow-sm"
+                                            onClick={() => toggleArrayItem(color.name, selectedColors, setSelectedColors)}
+                                            className={`w-8 h-8 rounded-full border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-sm
+                                                ${selectedColors.includes(color.name) ? 'ring-2 ring-offset-2 ring-primary scale-110 border-primary' : 'border-gray-300 hover:scale-110'}`}
                                             style={{ backgroundColor: color.hex }}
                                         />
                                     ))}
@@ -95,7 +149,13 @@ const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
                                 <div className="space-y-3">
                                     {['Under ₹999', '₹1000 - ₹1999', '₹2000 - ₹2999', 'Over ₹3000'].map((price) => (
                                         <label key={price} className="flex items-center gap-3 cursor-pointer group">
-                                            <input type="radio" name="price" className="w-4 h-4 accent-primary cursor-pointer" />
+                                            <input
+                                                type="radio"
+                                                name="price"
+                                                checked={selectedPrice === price}
+                                                onChange={() => setSelectedPrice(price)}
+                                                className="w-4 h-4 accent-primary cursor-pointer"
+                                            />
                                             <span className="text-sm text-gray-700 group-hover:text-primary transition-colors">{price}</span>
                                         </label>
                                     ))}
@@ -106,13 +166,13 @@ const FilterDrawer = ({ isOpen, onClose }: FilterDrawerProps) => {
                         {/* Footer Actions */}
                         <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-4 mt-auto">
                             <button
-                                onClick={onClose}
+                                onClick={handleClear}
                                 className="flex-1 py-3 border-2 border-black text-black font-bold uppercase tracking-wider text-sm hover:bg-black hover:text-white transition-colors"
                             >
                                 Clear
                             </button>
                             <button
-                                onClick={onClose}
+                                onClick={handleApply}
                                 className="flex-1 py-3 bg-primary text-white font-bold uppercase tracking-wider text-sm hover:bg-orange-600 transition-colors"
                             >
                                 Apply

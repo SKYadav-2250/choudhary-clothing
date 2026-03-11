@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useMemo } from 'react';
 import { products } from '../../data/mockData';
 
 const ProductCard = ({ product }: { product: any }) => {
@@ -41,21 +42,64 @@ const ProductCard = ({ product }: { product: any }) => {
 };
 
 const ProductGrid = () => {
+    const [searchParams] = useSearchParams();
+
+    const filteredProducts = useMemo(() => {
+        const categories = searchParams.getAll('category');
+        const sizes = searchParams.getAll('size');
+        const colors = searchParams.getAll('color');
+        const price = searchParams.get('price');
+
+        return products.filter((product: any) => {
+            // Category match
+            if (categories.length > 0 && (!product.category || !categories.includes(product.category))) {
+                return false;
+            }
+            // Size match
+            if (sizes.length > 0 && (!product.sizes || !product.sizes.some((s: string) => sizes.includes(s)))) {
+                return false;
+            }
+            // Color match
+            if (colors.length > 0 && (!product.colors || !product.colors.some((c: string) => colors.includes(c)))) {
+                return false;
+            }
+            // Price match
+            if (price) {
+                if (price === 'Under ₹999' && product.price >= 999) return false;
+                if (price === '₹1000 - ₹1999' && (product.price < 1000 || product.price >= 2000)) return false;
+                if (price === '₹2000 - ₹2999' && (product.price < 2000 || product.price >= 3000)) return false;
+                if (price === 'Over ₹3000' && product.price < 3000) return false;
+            }
+
+            return true;
+        });
+    }, [searchParams]);
+
     return (
         <div className="px-4 max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-                {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                ))}
-            </div>
-            <div className="mt-12 flex justify-center">
-                <Link
-                    to="/"
-                    className="border-2 border-black hover:bg-black hover:text-white px-8 py-3 text-sm font-bold uppercase tracking-widest transition-colors"
-                >
-                    View All Products
-                </Link>
-            </div>
+            {filteredProducts.length === 0 ? (
+                <div className="text-center py-20">
+                    <h3 className="text-xl font-bold uppercase mb-2">No Products Found</h3>
+                    <p className="text-gray-500">Try adjusting your filters to see more results.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                    {filteredProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
+                </div>
+            )}
+
+            {filteredProducts.length > 0 && (
+                <div className="mt-12 flex justify-center">
+                    <Link
+                        to="/"
+                        className="border-2 border-black hover:bg-black hover:text-white px-8 py-3 text-sm font-bold uppercase tracking-widest transition-colors"
+                    >
+                        View All Products
+                    </Link>
+                </div>
+            )}
         </div>
     );
 };
