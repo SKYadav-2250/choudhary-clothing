@@ -1,14 +1,8 @@
 import { Link } from 'react-router-dom';
-import { products } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 
 const Cart = () => {
-    // Mock cart items based on our mock data
-    const cartItems = [
-        { ...products[0], quantity: 1, size: 'L' },
-        { ...products[2], quantity: 2, size: 'M' }
-    ];
-
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const { cartItems, cartTotal, removeFromCart, updateQuantity } = useCart();
 
     return (
         <div className="pt-24 min-h-screen pb-16 bg-white">
@@ -20,11 +14,11 @@ const Cart = () => {
                         {/* Cart Items List */}
                         <div className="flex-1">
                             <div className="border-t border-gray-200">
-                                {cartItems.map((item, index) => (
-                                    <div key={index} className="flex gap-4 py-6 border-b border-gray-200">
-                                        <Link to={`/product/${item.id}`} className="w-24 h-32 bg-gray-100 flex-shrink-0 relative group">
+                                {cartItems.map((item) => (
+                                    <div key={`${item._id}-${item.size}`} className="flex gap-4 py-6 border-b border-gray-200">
+                                        <Link to={`/product/${item._id}`} className="w-24 h-32 bg-gray-100 flex-shrink-0 relative group">
                                             <img
-                                                src={item.images[0]}
+                                                src={item.image}
                                                 alt={item.name}
                                                 className="w-full h-full object-cover"
                                             />
@@ -33,7 +27,7 @@ const Cart = () => {
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <h3 className="text-sm font-semibold uppercase text-gray-900 line-clamp-2">
-                                                        <Link to={`/product/${item.id}`}>{item.name}</Link>
+                                                        <Link to={`/product/${item._id}`}>{item.name}</Link>
                                                     </h3>
                                                     <p className="text-sm text-gray-500 mt-1">Size: {item.size}</p>
                                                     <p className="text-sm text-gray-500 mt-1">Qty: {item.quantity}</p>
@@ -42,11 +36,21 @@ const Cart = () => {
                                             </div>
                                             <div className="mt-auto flex justify-between items-center pt-4">
                                                 <div className="flex items-center border border-gray-300 rounded-sm">
-                                                    <button className="px-3 py-1 font-semibold hover:bg-gray-100 transition-colors">-</button>
+                                                    <button 
+                                                        onClick={() => updateQuantity(item._id, item.size, item.quantity - 1)}
+                                                        disabled={item.quantity <= 1}
+                                                        className="px-3 py-1 font-semibold hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                                    >-</button>
                                                     <span className="px-3 py-1 text-sm font-medium border-x border-gray-300">{item.quantity}</span>
-                                                    <button className="px-3 py-1 font-semibold hover:bg-gray-100 transition-colors">+</button>
+                                                    <button 
+                                                        onClick={() => updateQuantity(item._id, item.size, item.quantity + 1)}
+                                                        className="px-3 py-1 font-semibold hover:bg-gray-100 transition-colors"
+                                                    >+</button>
                                                 </div>
-                                                <button className="text-sm text-gray-500 underline hover:text-black transition-colors">
+                                                <button 
+                                                    onClick={() => removeFromCart(item._id, item.size)}
+                                                    className="text-sm text-gray-500 underline hover:text-black transition-colors"
+                                                >
                                                     Remove
                                                 </button>
                                             </div>
@@ -62,7 +66,7 @@ const Cart = () => {
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-semibold">₹{subtotal.toLocaleString()}</span>
+                                    <span className="font-semibold">₹{cartTotal.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between text-sm pb-4 border-b border-gray-200">
                                     <span className="text-gray-600">Shipping</span>
@@ -70,7 +74,7 @@ const Cart = () => {
                                 </div>
                                 <div className="flex justify-between items-center text-lg font-bold">
                                     <span>Total</span>
-                                    <span>₹{subtotal.toLocaleString()}</span>
+                                    <span>₹{cartTotal.toLocaleString()}</span>
                                 </div>
                                 <p className="text-[10px] text-gray-500 text-right uppercase">Inclusive of all taxes</p>
                             </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCart } from '../../context/CartContext';
 
 const SIZES = [
     { label: 'XS', inStock: true },
@@ -9,8 +10,27 @@ const SIZES = [
     { label: 'XXL', inStock: false },
 ];
 
-const PurchaseLogic = () => {
+const PurchaseLogic = ({ product }: { product: any }) => {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const { addToCart } = useCart();
+    
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const handleAddToCart = () => {
+        if (!selectedSize || !product) return;
+        
+        addToCart({
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            image: product.images[0],
+            size: selectedSize,
+            quantity: 1
+        });
+        
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
 
     return (
         <div className="mt-8">
@@ -43,8 +63,12 @@ const PurchaseLogic = () => {
                 ))}
             </div>
 
-            <button className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-4 rounded-sm uppercase tracking-widest transition-colors hidden md:block">
-                Add to Cart
+            <button 
+                onClick={handleAddToCart}
+                disabled={!selectedSize}
+                className={`w-full font-bold py-4 rounded-sm uppercase tracking-widest transition-colors hidden md:block ${!selectedSize ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary hover:bg-orange-600 text-white'}`}
+            >
+                {showSuccess ? 'Added to Cart!' : 'Add to Cart'}
             </button>
 
             <div className="mt-6 flex flex-col gap-3 text-sm text-gray-600 border-t border-b border-gray-100 py-6">

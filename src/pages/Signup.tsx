@@ -2,19 +2,32 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import { authService } from '../services/authService';
 
 const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock signup
+        setError('');
+        setIsLoading(true);
+        
         if (name && email && password) {
-            localStorage.setItem('user', JSON.stringify({ email, name }));
-            navigate('/account');
+            try {
+                await authService.register(name, email, password);
+                navigate('/account');
+            } catch (err: any) {
+                setError(err.message || 'Registration failed. Please try again.');
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            setIsLoading(false);
         }
     };
 
@@ -37,6 +50,11 @@ const Signup = () => {
                 <p className="text-gray-500 text-sm mb-8 text-center text-balance">Join Trendsetter to unlock exclusive perks.</p>
 
                 <form onSubmit={handleSignup} className="space-y-4 mb-6">
+                    {error && (
+                        <div className="bg-red-50 text-red-500 text-sm p-3 border border-red-200 uppercase tracking-wide">
+                            {error}
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-bold uppercase tracking-wider mb-2" htmlFor="name">Full Name</label>
                         <input
@@ -76,9 +94,10 @@ const Signup = () => {
 
                     <button
                         type="submit"
-                        className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors mt-4"
+                        disabled={isLoading}
+                        className="w-full bg-primary hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors mt-4 flex justify-center items-center"
                     >
-                        Sign Up
+                        {isLoading ? 'Signing Up...' : 'Sign Up'}
                     </button>
                 </form>
 

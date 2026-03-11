@@ -1,18 +1,54 @@
 import { useParams } from 'react-router-dom';
-import { products } from '../data/mockData';
+import { useEffect, useState } from 'react';
+import { productService } from '../services/productService';
 import MediaGallery from '../components/PDP/MediaGallery';
 import PurchaseLogic from '../components/PDP/PurchaseLogic';
 import StickyCTA from '../components/PDP/StickyCTA';
 import SocialProof from '../components/PDP/SocialProof';
-import { useEffect } from 'react';
 
 const ProductDetail = () => {
     const { id } = useParams();
-    const product = products.find(p => p.id === Number(id)) || products[0];
+    const [product, setProduct] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        
+        const fetchProduct = async () => {
+            if (!id) return;
+            try {
+                setIsLoading(true);
+                const data = await productService.getProductById(id);
+                setProduct(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch product details');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProduct();
     }, [id]);
+
+    if (isLoading) {
+        return (
+            <div className="pt-24 min-h-screen pb-24 md:pb-0 flex items-center justify-center">
+                <h2 className="text-2xl font-bold uppercase tracking-wider">Loading Product...</h2>
+            </div>
+        );
+    }
+
+    if (error || !product) {
+        return (
+            <div className="pt-24 min-h-screen pb-24 md:pb-0 flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold uppercase tracking-wider text-red-500 mb-2">Error</h2>
+                    <p className="text-gray-600">{error || 'Product not found'}</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="pt-24 min-h-screen pb-24 md:pb-0">
@@ -31,7 +67,7 @@ const ProductDetail = () => {
                             <span className="text-xs text-gray-500 ml-2 mb-1.5 uppercase font-medium">Inclusive of all taxes.</span>
                         </div>
 
-                        <PurchaseLogic />
+                        <PurchaseLogic product={product} />
 
                         <div className="mt-12">
                             <h3 className="font-bold uppercase tracking-wider text-sm mb-4">Available Offers</h3>

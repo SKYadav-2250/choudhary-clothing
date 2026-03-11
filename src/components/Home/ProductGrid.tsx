@@ -1,10 +1,10 @@
 import { Link, useSearchParams } from 'react-router-dom';
-import { useMemo } from 'react';
-import { products } from '../../data/mockData';
+import { useMemo, useEffect, useState } from 'react';
+import { productService } from '../../services/productService';
 
 const ProductCard = ({ product }: { product: any }) => {
     return (
-        <Link to={`/product/${product.id}`} className="group block">
+        <Link to={`/product/${product._id}`} className="group block">
             <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden mb-4">
                 {/* Tag */}
                 {product.tag && (
@@ -43,18 +43,34 @@ const ProductCard = ({ product }: { product: any }) => {
 
 const ProductGrid = () => {
     const [searchParams] = useSearchParams();
+    const [apiProducts, setApiProducts] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const categoryParam = searchParams.get('category') || undefined;
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setIsLoading(true);
+                const data = await productService.getAllProducts(categoryParam);
+                setApiProducts(data);
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch products');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, [categoryParam]);
 
     const filteredProducts = useMemo(() => {
-        const categories = searchParams.getAll('category');
         const sizes = searchParams.getAll('size');
         const colors = searchParams.getAll('color');
         const price = searchParams.get('price');
 
-        return products.filter((product: any) => {
-            // Category match
-            if (categories.length > 0 && (!product.category || !categories.includes(product.category))) {
-                return false;
-            }
+        return apiProducts.filter((product: any) => {
             // Size match
             if (sizes.length > 0 && (!product.sizes || !product.sizes.some((s: string) => sizes.includes(s)))) {
                 return false;
@@ -73,11 +89,20 @@ const ProductGrid = () => {
 
             return true;
         });
-    }, [searchParams]);
+    }, [searchParams, apiProducts]);
 
     return (
         <div className="px-4 max-w-7xl mx-auto">
-            {filteredProducts.length === 0 ? (
+            {isLoading ? (
+                <div className="text-center py-20">
+                    <h3 className="text-xl font-bold uppercase mb-2">Loading Products...</h3>
+                </div>
+            ) : error ? (
+                <div className="text-center py-20 text-red-500">
+                    <h3 className="text-xl font-bold uppercase mb-2">Error</h3>
+                    <p>{error}</p>
+                </div>
+            ) : filteredProducts.length === 0 ? (
                 <div className="text-center py-20">
                     <h3 className="text-xl font-bold uppercase mb-2">No Products Found</h3>
                     <p className="text-gray-500">Try adjusting your filters to see more results.</p>
@@ -85,7 +110,7 @@ const ProductGrid = () => {
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                     {filteredProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product._id} product={product} />
                     ))}
                 </div>
             )}

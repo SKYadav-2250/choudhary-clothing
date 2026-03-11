@@ -2,18 +2,30 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import { authService } from '../services/authService';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock login
+        setError('');
+        setIsLoading(true);
         if (email && password) {
-            localStorage.setItem('user', JSON.stringify({ email, name: email.split('@')[0] }));
-            navigate('/account');
+            try {
+                await authService.login(email, password);
+                navigate('/account');
+            } catch (err: any) {
+                setError(err.message || 'Failed to login');
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            setIsLoading(false);
         }
     };
 
@@ -36,6 +48,11 @@ const Login = () => {
                 <p className="text-gray-500 text-sm mb-8 text-center text-balance">Welcome back! Please enter your details.</p>
 
                 <form onSubmit={handleLogin} className="space-y-4 mb-6">
+                    {error && (
+                        <div className="bg-red-50 text-red-500 text-sm p-3 border border-red-200 uppercase tracking-wide">
+                            {error}
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-bold uppercase tracking-wider mb-2" htmlFor="email">Email</label>
                         <input
@@ -63,9 +80,10 @@ const Login = () => {
 
                     <button
                         type="submit"
-                        className="w-full bg-primary hover:bg-orange-600 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors mt-4"
+                        disabled={isLoading}
+                        className="w-full bg-primary hover:bg-orange-600 disabled:bg-gray-400 text-white font-bold py-3 uppercase tracking-widest text-sm transition-colors mt-4 flex justify-center items-center"
                     >
-                        Sign In
+                        {isLoading ? 'Signing In...' : 'Sign In'}
                     </button>
                 </form>
 

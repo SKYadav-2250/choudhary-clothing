@@ -2,10 +2,12 @@ import { Search, User, ShoppingBag, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import FilterDrawer from './FilterDrawer';
+import { useCart } from '../../context/CartContext';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const { cartCount } = useCart();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -60,9 +62,11 @@ const Navbar = () => {
                         </Link>
                         <Link to="/cart" className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
                             <ShoppingBag className="w-5 h-5" />
-                            <span className="absolute top-1 right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                                0
-                            </span>
+                            {cartCount > 0 && (
+                                <span className="absolute top-1 right-1 bg-primary text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                                    {cartCount}
+                                </span>
+                            )}
                         </Link>
                     </div>
 
