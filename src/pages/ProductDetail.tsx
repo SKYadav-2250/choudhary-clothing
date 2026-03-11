@@ -67,6 +67,12 @@ const ProductDetail = () => {
                             <span className="text-xs text-gray-500 ml-2 mb-1.5 uppercase font-medium">Inclusive of all taxes.</span>
                         </div>
 
+                        <div className="mb-6 border-t border-b border-gray-100 py-4">
+                            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {product.description}
+                            </p>
+                        </div>
+
                         <PurchaseLogic product={product} />
 
                         <div className="mt-12">
